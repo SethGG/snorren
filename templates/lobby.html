@@ -1,0 +1,18 @@
+<h1>Lobby</h1>
+
+{% if gm %}
+<button type="button", id="start">Start spel</button>
+{% endif %}
+
+<div id='users'></div>
+
+<script type="text/javascript">
+
+  socket.on('update_users', function (data) {
+    $('#users').empty();
+    data.users.forEach(function(user) {
+      $('#users').append('<li>'+user+'</li>');
+    });
+  });
+
+</script>
