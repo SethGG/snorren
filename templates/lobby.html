@@ -1,18 +1,55 @@
 <h1>Lobby</h1>
 
 {% if gm %}
-<button type="button", id="start">Start spel</button>
+<h3>Rollen:</h3>
+
+<form id="roles">
+  <table>
+    {% for role, tuple in roles.items() %}
+    {% if loop.index0 % 3 == 0 %}
+    <tr>
+      {% endif %}
+      <td>
+        <input type="number" name={{ role.__name__ }} id={{ loop.index }} value='1' size='1' min={{ tuple[0] }} max={{ tuple[1] }}>
+      </td>
+      <td>
+        <label for={{ loop.index }}>{{ role.__name__ }}</label>
+      </td>
+      {% if loop.index % 3 == 0 %}
+    </tr>
+    {% endif %}
+    {% endfor %}
+  </table>
+</form>
+<br>
+<button type="button" , id="b1">Start spel</button>
 {% endif %}
 
-<div id='users'></div>
+<h3>Spelers:</h3>
+<ul id='users'></ul>
 
 <script type="text/javascript">
-
-  socket.on('update_users', function (data) {
+  socket.on('update_users', function(data) {
     $('#users').empty();
     data.users.forEach(function(user) {
-      $('#users').append('<li>'+user+'</li>');
+      $('#users').append('<li>' + user + '</li>');
     });
   });
 
+  socket.emit('request_users');
 </script>
+
+{% if gm %}
+<script type="text/javascript">
+  $('#b1').click(function() {
+    var unindexed_array = $('#roles').serializeArray();
+    var indexed_array = {};
+
+    $.map(unindexed_array, function(n, i) {
+      indexed_array[n['name']] = Number(n['value']);
+    });
+
+    socket.emit('start_game', indexed_array);
+  });
+</script>
+{% endif %}
