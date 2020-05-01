@@ -7,9 +7,6 @@
   <title>Snorren</title>
   <script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
-  <script type="text/javascript">
-    var socket = io();
-  </script>
 </head>
 
 <body>
@@ -37,8 +34,14 @@
   </div>
 
   <script type="text/javascript">
+    var socket = io();
+
     socket.on('message', function(msg) {
       alert(msg);
+    });
+
+    socket.on('disconnect', function(data) {
+      alert('Connectie met server verbroken');
     });
 
     socket.on('update_page', function() {
