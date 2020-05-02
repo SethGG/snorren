@@ -29,16 +29,14 @@
 <ul id='users'></ul>
 
 <script type="text/javascript">
-  var socket_lobby = io('/lobby');
-
-  socket_lobby.on('update_users', function(data) {
+  socket.on('update_users', function(data) {
     $('#users').empty();
     data.users.forEach(function(user) {
       $('#users').append('<li>' + user + '</li>');
     });
   });
 
-  socket_lobby.emit('request_users');
+  socket.emit('request_users');
 </script>
 
 {% if gm %}
@@ -51,7 +49,7 @@
       indexed_array[n['name']] = Number(n['value']);
     });
 
-    socket_lobby.emit('start_game', indexed_array);
+    socket.emit('start_game', indexed_array);
   });
 </script>
 {% endif %}

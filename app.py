@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, send
-from flask_login import LoginManager, UserMixin, current_user, login_user, logout_user
+from flask_login import LoginManager, UserMixin, current_user, login_user
 import random
 
 app = Flask(__name__)
@@ -13,6 +13,7 @@ socketio = SocketIO(app)
 # ------------------------------------------------------------------------------------------------ #
 
 GAME_IN_PROGRESS = False
+CURRENT_PHASE = Lobby()
 GAME_MASTER = None
 PLAYERS = {}
 ROLES = {
@@ -27,33 +28,45 @@ ROLES = {
     'Oma': (0, 1)}
 
 # ------------------------------------------------------------------------------------------------ #
-# GameMaster and Player class
+# Player class
 # ------------------------------------------------------------------------------------------------ #
-
-
-class GameMaster(UserMixin):
-    def __init__(self):
-        self.page = lobby_page(gm=True)
-
-    def get_id(self):
-        return False
 
 
 class Player(UserMixin):
     def __init__(self, name):
         self.name = name
-        self.page = lobby_page(gm=False)
+        self.sid = request.sid
+        self.role = None
+        self.page = lobby_page(gm=(not bool(name)))
 
     def get_id(self):
-        return self.name
+        return self.sid
+
+    @property
+    def current_page(self):
+        return CURRENT_PHASE.render_page(self.role)
+
+    @property
+    def is_active(self):
+        return bool(self.sid)
+
+    @is_active.setter
+    def is_active(self, bool):
+        if bool and not self.sid:
+            self.sid = request.sid
+        elif not bool:
+            self.sid = None
+
+
+class GameMaster(Player):
+    def __init__(self):
+        Player.__init__(self, None)
+        self.role = 'game master'
 
 
 @login.user_loader
 def load_user(id):
-    if id:
-        return PLAYERS[id]
-    else:
-        return GAME_MASTER
+    return [player for player in [GAME_MASTER] + list(PLAYERS.values()) if player.sid == id][0]
 
 
 # ------------------------------------------------------------------------------------------------ #
@@ -66,19 +79,17 @@ def index():
     return render_template("index.html")
 
 # ------------------------------------------------------------------------------------------------ #
-# Root namespace
+# SocketIO event handlers
 # ------------------------------------------------------------------------------------------------ #
 
 
-@socketio.on('new_payer')
-def handle_new_player(name):
-    if name:
-        if current_user.is_authenticated:
-            send('Je bent al ingelogd')
-        elif GAME_IN_PROGRESS:
+@socketio.on('join')
+def handle_join(msg):
+    def handle_player(name):
+        if GAME_IN_PROGRESS:
             if name not in PLAYERS:
                 send('Er is nog een spel bezig')
-            elif not PLAYERS[name].is_authenticated:
+            elif not PLAYERS[name].is_active:
                 login_user(PLAYERS[name])
                 emit('update_page')
         elif name in PLAYERS:
@@ -86,39 +97,41 @@ def handle_new_player(name):
         else:
             PLAYERS[name] = Player(name)
             login_user(PLAYERS[name])
-            emit('update_users', {'users': list(PLAYERS)}, namespace='/lobby', broadcast=True)
+            emit('update_users', {'users': list(PLAYERS)}, broadcast=True)
             emit('update_page')
 
-
-@socketio.on('new_game_master')
-def handle_new_game_master():
-    global GAME_MASTER
-    if current_user.is_authenticated:
-        send('Je bent al ingelogd')
-    elif GAME_IN_PROGRESS:
-        if GAME_MASTER.is_authenticated:
-            send('Er is nog een spel bezig')
+    def handle_game_master():
+        global GAME_MASTER
+        if GAME_IN_PROGRESS:
+            if GAME_MASTER.is_active:
+                send('Er is nog een spel bezig')
+            else:
+                login_user(GAME_MASTER)
+                emit('update_page')
+        elif GAME_MASTER:
+            send('Er heeft zich al een spelleider aangeboden.')
         else:
+            GAME_MASTER = Player()
             login_user(GAME_MASTER)
             emit('update_page')
-    elif GAME_MASTER:
-        send('Er heeft zich al een spelleider aangeboden.')
-    else:
-        GAME_MASTER = GameMaster()
-        login_user(GAME_MASTER)
-        emit('update_page')
+
+    if current_user.is_authenticated:
+        send('Je bent al ingelogd')
+    elif type(msg) is dict and 'type' in msg:
+        if msg['type'] == 'game master':
+            handle_game_master()
+        elif msg['type'] == 'player' and 'name' in msg and type(msg['name']) is str:
+            handle_player(msg['name'])
 
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print('disconnected')
-#    global GAME_MASTER
-#    if not GAME_IN_PROGRESS:
-#        if current_user is GAME_MASTER:
-#            GAME_MASTER = None
-#        elif current_user in PLAYERS.values():
-#            del PLAYERS[current_user.name]
-#    logout_user()
+    global GAME_MASTER
+    if not GAME_IN_PROGRESS:
+        if current_user == GAME_MASTER:
+            GAME_MASTER = None
+        elif current_user in PLAYERS.values():
+            del PLAYERS[current_user.name]
 
 
 @socketio.on('request_page')
@@ -132,12 +145,12 @@ def handle_request_page():
 # ------------------------------------------------------------------------------------------------ #
 
 
-@socketio.on('request_users', namespace='/lobby')
+@socketio.on('request_users')
 def handle_request_users():
     emit('update_users', {'users': list(PLAYERS)})
 
 
-@socketio.on('start_game', namespace='/lobby')
+@socketio.on('start_game')
 def handle_start_game(roles):
     global GAME_IN_PROGRESS
     if not GAME_IN_PROGRESS and current_user == GAME_MASTER:
