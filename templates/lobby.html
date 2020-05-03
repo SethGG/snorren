@@ -6,16 +6,16 @@
 <form id="roles">
   <table>
     {% for role, tuple in roles.items() %}
-    {% if loop.index0 % 3 == 0 %}
+    {% if loop.index0 % 2 == 0 %}
     <tr>
       {% endif %}
-      <td>
+      <td style="padding: 5px;">
         <input type="number" name={{ role }} id={{ loop.index }} value='1' size='1' min={{ tuple[0] }} max={{ tuple[1] }}>
       </td>
       <td>
         <label for={{ loop.index }}>{{ role }}</label>
       </td>
-      {% if loop.index % 3 == 0 %}
+      {% if loop.index % 2 == 0 %}
     </tr>
     {% endif %}
     {% endfor %}
@@ -29,14 +29,12 @@
 <ul id='users'></ul>
 
 <script type="text/javascript">
-  socket.on('update_users', function(data) {
+  function pageMessageHandler(msg) {
     $('#users').empty();
-    data.users.forEach(function(user) {
+    msg.users.forEach(function(user) {
       $('#users').append('<li>' + user + '</li>');
     });
-  });
-
-  socket.emit('request_users');
+  }
 </script>
 
 {% if gm %}
@@ -49,7 +47,10 @@
       indexed_array[n['name']] = Number(n['value']);
     });
 
-    socket.emit('start_game', indexed_array);
+    socket.send({
+      'request': 'start game',
+      'role_selection': indexed_array
+    });
   });
 </script>
 {% endif %}

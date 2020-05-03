@@ -7,56 +7,53 @@
   <title>Snorren</title>
   <script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+  <script type="text/javascript">
+    var socket = io();
+  </script>
 </head>
 
 <body>
-  <div id="page">
 
-    <h1 style="display:inline;">Snorren</h1>
-    <h3 style="display:inline;">v1.0</h3>
-    <div>De "Ik ben geen frontend developer" editie</div>
-    <br>
+  <h1 style="display:inline;">Snorren</h1>
+  <h3 style="display:inline;">v1.0</h3>
+  <div>De "Ik ben geen frontend developer" editie</div>
+  <br>
 
-    <button type="button" id="b1">Ik ben speler</button>
-    <button type="button" id="b2">Ik ben spelleider</button>
-
-    <script type="text/javascript">
-      $('#b1').click(function() {
-        let name = prompt("Naam");
-        socket.emit('join', {
-          'type': 'player',
-          'name': name
-        });
-      });
-
-      $('#b2').click(function() {
-        socket.emit('join', {
-          'type': 'game master'
-        });
-      });
-    </script>
-
-  </div>
+  <button type="button" id="b1">Ik ben speler</button>
+  <button type="button" id="b2">Ik ben spelleider</button>
 
   <script type="text/javascript">
-    var socket = io();
+    $('#b1').click(function() {
+      let name = prompt("Naam");
+      socket.emit('join', {
+        'type': 'player',
+        'name': name
+      });
+    });
+
+    $('#b2').click(function() {
+      socket.emit('join', {
+        'type': 'game master'
+      });
+    });
 
     socket.on('message', function(msg) {
-      alert(msg);
+      if ('error' in msg) {
+        alert(msg.error);
+      } else {
+        pageMessageHandler(msg);
+      }
     });
 
     socket.on('disconnect', function(data) {
       alert('Connectie met server verbroken');
     });
 
-    socket.on('update_page', function() {
-      socket.emit('request_page');
-    });
-
-    socket.on('receive_page', function(data) {
-      $('#page').html(data);
+    socket.on('update_page', function(data) {
+      $('body').html(data);
     });
   </script>
+
 </body>
 
 </html>
