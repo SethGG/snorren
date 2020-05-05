@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 from flask_login import LoginManager
-from phases import Lobby
+from lobby import Lobby
 import globals as g
 
 app = Flask(__name__)

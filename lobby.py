@@ -3,6 +3,7 @@ from flask_socketio import send, emit
 from flask_login import current_user, login_user
 from cerberus import Validator
 from player import Player, GameMaster
+from phases import Night
 import globals as g
 import random
 
@@ -53,15 +54,15 @@ class Lobby:
         def start_game(role_selection):
             pool = []
             for role, num in role_selection.items():
-                pool.extend([role] * num)
+                obj = [x for x in g.ROLES if x.__name__ == role]
+                pool.extend(obj * num)
             if len(pool) != len(g.PLAYERS):
                 send({'error': 'Opgegeven aantal rollen is ongelijk aan het aantal spelers.'})
             else:
                 random.shuffle(pool)
                 for idx, player in enumerate(g.PLAYERS.values()):
-                    player.role = pool[idx]
-
-                print(g.PLAYERS)
+                    player.role = pool[idx]()
+                g.CURRENT_PHASE = Night(num=1)
 
         schema = {
             'request': {
@@ -74,7 +75,7 @@ class Lobby:
             }
         }
         for role, (min, max) in g.ROLES.items():
-            schema['role_selection']['schema'][role] = {
+            schema['role_selection']['schema'][role.__name__] = {
                 'type': 'integer', 'min': min, 'max': max}
         v = Validator(schema)
         if v.validate(msg) and current_user == g.GAME_MASTER:

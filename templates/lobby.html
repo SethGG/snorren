@@ -10,10 +10,10 @@
     <tr>
       {% endif %}
       <td style="padding: 5px;">
-        <input type="number" name={{ role }} id={{ loop.index }} value='1' size='1' min={{ tuple[0] }} max={{ tuple[1] }}>
+        <input type="number" name={{ role.__name__ }} id={{ loop.index }} value='1' size='1' min={{ tuple[0] }} max={{ tuple[1] }}>
       </td>
       <td>
-        <label for={{ loop.index }}>{{ role }}</label>
+        <label for={{ loop.index }}>{{ role.__name__ }}</label>
       </td>
       {% if loop.index % 2 == 0 %}
     </tr>
