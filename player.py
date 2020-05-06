@@ -40,6 +40,8 @@ class Player(UserMixin):
         for name, player in g.PLAYERS.items():
             if name not in self._info:
                 self._info[name] = {'role': None, 'dead': False, 'other': []}
+            if name == self.name:
+                self._info[name]['role'] = type(self.role).__name__
             if player.dead and 'dead' not in self._info[name]['other']:
                 self._info[name]['dead'] = True
                 self._info[name]['other'].remove('mayor')
@@ -53,6 +55,35 @@ class Player(UserMixin):
         return self._info
 
 
-class GameMaster(Player):
+class GameMaster(UserMixin):
     def __init__(self):
-        Player.__init__(self, None)
+        self.sid = request.sid
+
+    def get_id(self):
+        return self.sid
+
+    @property
+    def is_active(self):
+        return bool(self.sid)
+
+    @is_active.setter
+    def is_active(self, bool):
+        if bool and not self.sid:
+            self.sid = request.sid
+        elif not bool:
+            self.sid = None
+
+    @property
+    def info(self):
+        info = {}
+        for name, player in g.PLAYERS.items():
+            info[name] = {
+                'role': type(player.role).__name__,
+                'dead': player.dead,
+                'other': []
+            }
+            if 'Geliefden' in player.teams:
+                info[name]['other'].append('lover')
+            if player.mayor:
+                info[name]['other'].append('mayor')
+        return info

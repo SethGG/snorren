@@ -4,7 +4,7 @@ from roles import Burger, Nazi, Snor, Herbergier, Priester, Hoer, Pimp, Scooterj
 # Global variables
 # ------------------------------------------------------------------------------------------------ #
 
-CURRENT_PHASE = None
+GAME_MANAGER = None
 GAME_MASTER = None
 PLAYERS = {}
 ROLES = {

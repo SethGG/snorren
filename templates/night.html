@@ -1,5 +1,44 @@
 <h1>Spelers:</h1>
 
 <table>
-  {% for info in player.information %}
+  {% for name, info in player.info.items() %}
+  {% if loop.index0 % 2 == 0 %}
+  <tr>
+    {% endif %}
+    <td style="padding: 7px; width: 50%; text-align: center;">
+      <div style="font-size: 30px; height: 40px; overflow: hidden;">
+        {% if info['role'] == 'Burger' %}
+        🧑🏻🍔
+        {% elif info['role'] == 'Herbergier' %}
+        🧔🏻🍺
+        {% elif info['role'] == 'Hoer' %}
+        👱🏻‍♀️👠
+        {% elif info['role'] == 'Oma' %}
+        👵🏻🍪
+        {% elif info['role'] == 'Pimp' %}
+        👨🏿💸
+        {% elif info['role'] == 'Priester' %}
+        👴🏻✝️
+        {% elif info['role'] == 'Scooterjeugd' %}
+        👦🏻🛵
+        {% elif info['role'] == 'Nazi' %}
+        🙋🏻‍♂️卐
+        {% elif info['role'] == 'Snor' %}
+        👨🏻‍✈️卐
+        {% else %}
+        👤❓
+        {% endif %}
+      </div>
+      <div>
+        {% if name == player.name %}
+        <u>{{ name }}</u>
+        {% else %}
+        {{ name }}
+        {% endif %}
+      </div>
+    </td>
+    {% if loop.index % 2 == 0 %}
+  </tr>
+  {% endif %}
+  {% endfor %}
 </table>

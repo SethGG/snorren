@@ -62,7 +62,7 @@ class Lobby:
                 random.shuffle(pool)
                 for idx, player in enumerate(g.PLAYERS.values()):
                     player.role = pool[idx]()
-                g.CURRENT_PHASE = Night(num=1)
+                Night(num=1)
 
         schema = {
             'request': {
