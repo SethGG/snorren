@@ -11,17 +11,14 @@ import random
 class Lobby:
     @staticmethod
     def handle_join(msg):
-        def send_page(gm=False):
-            emit('update_page', render_template('lobby.html', gm=gm, roles=g.ROLES))
-            send({'users': list(g.PLAYERS)}, broadcast=True)
-
         def handle_player(name):
             if name in g.PLAYERS:
                 send({'error': 'Deze naam is al in gebruik'})
             else:
                 g.PLAYERS[name] = Player(name)
                 login_user(g.PLAYERS[name])
-                send_page()
+                emit('update_page', render_template('lobby/lobby.html'))
+                send({'users': list(g.PLAYERS)}, broadcast=True)
 
         def handle_game_master():
             if g.GAME_MASTER:
@@ -29,7 +26,8 @@ class Lobby:
             else:
                 g.GAME_MASTER = GameMaster()
                 login_user(g.GAME_MASTER)
-                send_page(gm=True)
+                emit('update_page', render_template('lobby/lobby.html', gm=True, roles=g.ROLES))
+                send({'users': list(g.PLAYERS)})
 
         schema = {
             'type': {

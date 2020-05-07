@@ -1,0 +1,17 @@
+<h1>Lobby</h1>
+
+{% if gm %}
+{% include "lobby/gm_panel.html" %}
+{% endif %}
+
+<h3>Spelers:</h3>
+<ul id='users'></ul>
+
+<script type="text/javascript">
+  function pageMessageHandler(msg) {
+    $('#users').empty();
+    msg.users.forEach(function(user) {
+      $('#users').append('<li>' + user + '</li>');
+    });
+  }
+</script>

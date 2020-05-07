@@ -1,0 +1,43 @@
+<h1>Nacht {{ num }}</h1>
+
+<h3>Bericht:</h3>
+
+<p> De herbergier wordt wakker en kiest een speler wiens rol hij wilt bekijken.</p>
+
+{% if player.role.__class__.__name__ == 'Herbergier' %}
+<label for="choice">Wiens rol wil je bekijken?</label>
+
+<select id="choice">
+  {% for name, info in player.info.items() %}
+  {% if 'dead' not in info['other'] %}
+  <option value={{ name }}>{{ name }}</option>
+  {% endif %}
+  {% endfor %}
+</select>
+
+<button type="button" id="b2">Bevestig</button>
+
+<script type="text/javascript">
+  $('#b2').click(function() {
+    let name = $("#choice option:selected").val();
+    socket.send({
+      'request': 'choose',
+      'name': name
+    });
+  });
+</script>
+{% endif %}
+
+{% if not player.role %}
+<button type="button" id="b1">Volgende Stap</button>
+
+<script type="text/javascript">
+  $('#b1').click(function() {
+    socket.send({
+      'request': 'continue',
+    });
+  });
+</script>
+{% endif %}
+
+{% include "game/players.html" %}

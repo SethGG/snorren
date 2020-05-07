@@ -1,0 +1,41 @@
+<h3>Spelers:</h3>
+
+<table>
+  {% for name, info in player.info.items() %}
+  {% if loop.index0 % 3 == 0 %}
+  <tr>
+    {% endif %}
+    <td style="padding: 10px; text-align: center;">
+      {% if info['role'] == 'Burger' %}
+      <img src="{{ url_for('static', filename='images/burger.png') }}" height="40" width="82">
+      {% elif info['role'] == 'Herbergier' %}
+      <img src="{{ url_for('static', filename='images/herbergier.png') }}" height="40" width="81">
+      {% elif info['role'] == 'Hoer' %}
+      <img src="{{ url_for('static', filename='images/hoer.png') }}" height="40" width="83">
+      {% elif info['role'] == 'Oma' %}
+      <img src="{{ url_for('static', filename='images/oma.png') }}" height="40" width="82">
+      {% elif info['role'] == 'Pimp' %}
+      <img src="{{ url_for('static', filename='images/pimp.png') }}" height="40" width="82">
+      {% elif info['role'] == 'Priester' %}
+      <img src="{{ url_for('static', filename='images/priester.png') }}" height="40" width="83">
+      {% elif info['role'] == 'Scooterjeugd' %}
+      <img src="{{ url_for('static', filename='images/scooterjeugd.png') }}" height="40" width="83">
+      {% elif info['role'] == 'Nazi' %}
+      <img src="{{ url_for('static', filename='images/nazi.png') }}" height="40" width="75">
+      {% elif info['role'] == 'Snor' %}
+      <img src="{{ url_for('static', filename='images/snor.png') }}" height="40" width="73">
+      {% else %}
+      <img src="{{ url_for('static', filename='images/onbekend.png') }}" height="40" width="74">
+      {% endif %}
+      <br>
+      {% if name == player.name %}
+      <u>{{ name }}</u>
+      {% else %}
+      {{ name }}
+      {% endif %}
+    </td>
+    {% if loop.index % 3 == 0 %}
+  </tr>
+  {% endif %}
+  {% endfor %}
+</table>

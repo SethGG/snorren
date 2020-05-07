@@ -1,0 +1,26 @@
+<h1>Nacht {{ num }}</h1>
+
+<h3>Bericht:</h3>
+
+{% if num == 1 %}
+<p> De eerste nacht is aangebroken en ieders rol is toegekend.</p>
+{% if player.role %}
+<p> Jouw rol: {{ player.role.__class__.__name__ }}</p>
+{% endif %}
+{% else %}
+<p> Een nieuwe nacht is aangebroken.</p>
+{% endif %}
+
+{% if not player.role %}
+<button type="button" id="b1">Volgende Stap</button>
+
+<script type="text/javascript">
+  $('#b1').click(function() {
+    socket.send({
+      'request': 'continue',
+    });
+  });
+</script>
+{% endif %}
+
+{% include "game/players.html" %}

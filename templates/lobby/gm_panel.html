@@ -1,6 +1,3 @@
-<h1>Lobby</h1>
-
-{% if gm %}
 <h3>Rollen:</h3>
 
 <form id="roles">
@@ -23,21 +20,7 @@
 </form>
 <br>
 <button type="button" , id="b1">Start spel</button>
-{% endif %}
 
-<h3>Spelers:</h3>
-<ul id='users'></ul>
-
-<script type="text/javascript">
-  function pageMessageHandler(msg) {
-    $('#users').empty();
-    msg.users.forEach(function(user) {
-      $('#users').append('<li>' + user + '</li>');
-    });
-  }
-</script>
-
-{% if gm %}
 <script type="text/javascript">
   $('#b1').click(function() {
     let unindexed_array = $('#roles').serializeArray();
@@ -53,4 +36,3 @@
     });
   });
 </script>
-{% endif %}

@@ -1,4 +1,7 @@
-import globals as g
+from flask import render_template
+from flask_socketio import emit
+from flask_login import current_user
+from phases import BasePhase
 
 
 class Burger:
@@ -9,16 +12,19 @@ class Burger:
 
 
 class Herbergier(Burger):
-    class night_step:
+    class night_step(BasePhase):
         priority = 1
 
-        @staticmethod
-        def send_page():
-            pass
+        def __init__(self, parent):
+            super().__init__(parent)
 
-        @staticmethod
-        def handle_message(msg):
-            pass
+        def send_page(self, player=current_user):
+            emit('update_page',
+                 render_template('game/night_herbergier.html', num=self.parent.num, player=player),
+                 room=player.sid)
+
+        def handle_message(self, msg):
+            print(msg)
 
 
 class Hoer(Burger):
