@@ -13,6 +13,7 @@ class Player(UserMixin):
         self.sid = request.sid
         self.role = None
         self.dead = False
+        self.lover = False
         self.mayor = False
         self._info = {}
 
@@ -33,7 +34,10 @@ class Player(UserMixin):
     @property
     def teams(self):
         if self.role:
-            return [self.role.team]
+            if self.lover:
+                return [self.role.team, 'Geliefden']
+            else:
+                return [self.role.team]
 
     @property
     def info(self):

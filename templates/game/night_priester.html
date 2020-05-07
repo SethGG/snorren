@@ -1,0 +1,45 @@
+<h1>Nacht {{ num }}</h1>
+
+<h3>Fase:</h3>
+
+<p>De priester wordt de eerste nacht wakker en wijst twee geliefden aan.</p>
+
+{% if player.role.__class__.__name__ == 'Priester' %}
+<label for="choice">Kies twee geliefden:</label>
+
+<select id="choice">
+  {% for name, info in player.info.items() %}
+  {% if 'dead' not in info['other'] %}
+  <option value={{ name }}>{{ name }}</option>
+  {% endif %}
+  {% endfor %}
+</select>
+
+<select id="choice2"></select>
+
+<button type="button" id="b1">Bevestig</button>
+
+<p id="result"></p>
+
+<script type="text/javascript">
+  function setChoice2() {
+    let options = $('#choice option').not(':selected').clone();
+    $('#choice2').empty().append(options);
+  }
+
+  setChoice2()
+
+  $('#choice').on('change', setChoice2);
+
+  $('#b1').click(function() {
+    let name1 = $("#choice option:selected").val();
+    let name2 = $("#choice2 option:selected").val();
+    socket.send({
+      'request': 'match',
+      'names': [name1, name2]
+    });
+  });
+</script>
+{% endif %}
+
+{% include "game/players.html" %}

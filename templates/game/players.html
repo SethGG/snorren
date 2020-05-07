@@ -28,10 +28,16 @@
       <img src="{{ url_for('static', filename='images/onbekend.png') }}" height="40" width="74">
       {% endif %}
       <br>
+      {% if 'lover' in info.other %}
+      &#9829;
+      {% endif %}
       {% if name == player.name %}
       <u>{{ name }}</u>
       {% else %}
       {{ name }}
+      {% endif %}
+      {% if 'lover' in info.other %}
+      &#9829;
       {% endif %}
     </td>
     {% if loop.index % 3 == 0 %}

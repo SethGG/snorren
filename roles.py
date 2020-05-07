@@ -16,7 +16,7 @@ class Burger:
 
 class Herbergier(Burger):
     class night_step(BasePhase):
-        priority = 1
+        priority = 2
 
         def __init__(self, parent):
             super().__init__(parent)
@@ -51,7 +51,7 @@ class Herbergier(Burger):
 
 class Hoer(Burger):
     class night_step(BasePhase):
-        priority = 2
+        priority = 3
 
         def __init__(self, parent):
             super().__init__(parent)
@@ -89,8 +89,40 @@ class Pimp(Burger):
 
 
 class Priester(Burger):
-    def __init__(self):
-        Burger.__init__(self)
+    class night_step(BasePhase):
+        priority = 1
+
+        def __init__(self, parent):
+            if not parent.num == 1:
+                parent.start_next_phase()
+            super().__init__(parent)
+
+        def send_page(self, player=current_user):
+            emit('update_page',
+                 render_template('game/night_priester.html', num=self.parent.num, player=player),
+                 room=player.sid)
+
+        def handle_message(self, msg):
+            schema = {
+                'request': {
+                    'type': 'string',
+                    'allowed': ['match']
+                },
+                'names': {
+                    'type': 'list',
+                    'schema': {
+                        'type': 'string',
+                        'allowed': [x for x, y in g.PLAYERS.items() if not y.dead],
+                    },
+                    'minlength': 2,
+                    'maxlength': 2
+                }
+            }
+            v = Validator(schema)
+            if (v.validate(msg) and current_user.role.__class__.__name__ == 'Priester'):
+                for name in msg['names']:
+                    g.PLAYERS[name].lover = True
+                self.parent.start_next_phase()
 
 
 class Scooterjeugd(Burger):
