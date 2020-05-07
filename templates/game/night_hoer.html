@@ -2,10 +2,10 @@
 
 <h3>Fase:</h3>
 
-<p>De herbergier wordt wakker en kiest een speler wiens rol hij wilt bekijken.</p>
+<p>De hoer wordt wakker en kiest wie zij wilt beschermen vannacht.</p>
 
-{% if player.role.__class__.__name__ == 'Herbergier' %}
-<label for="choice">Wiens rol wil je bekijken?</label>
+{% if player.role.__class__.__name__ == 'Hoer' %}
+<label for="choice">Wie wil je beschermen?</label>
 
 <select id="choice">
   {% for name, info in player.info.items() %}
@@ -23,14 +23,10 @@
   $('#b2').click(function() {
     let name = $("#choice option:selected").val();
     socket.send({
-      'request': 'reveal',
+      'request': 'protect',
       'name': name
     });
   });
-
-  function pageMessageHandler(msg) {
-    $('#result').html('De rol van ' + msg.name + ' is: ' + msg.role);
-  }
 </script>
 {% endif %}
 

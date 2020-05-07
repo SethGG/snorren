@@ -50,8 +50,32 @@ class Herbergier(Burger):
 
 
 class Hoer(Burger):
-    def __init__(self):
-        Burger.__init__(self)
+    class night_step(BasePhase):
+        priority = 2
+
+        def __init__(self, parent):
+            super().__init__(parent)
+
+        def send_page(self, player=current_user):
+            emit('update_page',
+                 render_template('game/night_hoer.html', num=self.parent.num, player=player),
+                 room=player.sid)
+
+        def handle_message(self, msg):
+            schema = {
+                'request': {
+                    'type': 'string',
+                    'allowed': ['protect']
+                },
+                'name': {
+                    'type': 'string',
+                    'allowed': [x for x, y in g.PLAYERS.items() if not y.dead]
+                }
+            }
+            v = Validator(schema)
+            if (v.validate(msg) and current_user.role.__class__.__name__ == 'Hoer'):
+                self.parent.protected.append(msg['name'])
+                self.parent.start_next_phase()
 
 
 class Oma(Burger):

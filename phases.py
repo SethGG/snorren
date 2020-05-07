@@ -89,6 +89,9 @@ class Night:
             return step.priority
 
         self.num = num
+        self.protected = []
+        self.target = None
+
         if not Night.steps:
             Night.steps = sorted({player.role.night_step for player in g.PLAYERS.values()
                                   if player.role.night_step}, key=get_prio)
