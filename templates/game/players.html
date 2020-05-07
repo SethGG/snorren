@@ -1,11 +1,11 @@
 <h3>Spelers:</h3>
 
-<table>
+<table style="width: 100%; max-width: 400px;">
   {% for name, info in player.info.items() %}
   {% if loop.index0 % 3 == 0 %}
   <tr>
     {% endif %}
-    <td style="padding: 10px; text-align: center;">
+    <td style="padding: 7px; text-align: center;">
       {% if info['role'] == 'Burger' %}
       <img src="{{ url_for('static', filename='images/burger.png') }}" height="40" width="82">
       {% elif info['role'] == 'Herbergier' %}

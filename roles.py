@@ -1,7 +1,10 @@
 from flask import render_template
-from flask_socketio import emit
+from flask_socketio import send, emit
 from flask_login import current_user
+from cerberus import Validator
 from phases import BasePhase
+import globals as g
+import app
 
 
 class Burger:
@@ -17,6 +20,7 @@ class Herbergier(Burger):
 
         def __init__(self, parent):
             super().__init__(parent)
+            self.used = False
 
         def send_page(self, player=current_user):
             emit('update_page',
@@ -24,7 +28,25 @@ class Herbergier(Burger):
                  room=player.sid)
 
         def handle_message(self, msg):
-            print(msg)
+            schema = {
+                'request': {
+                    'type': 'string',
+                    'allowed': ['reveal']
+                },
+                'name': {
+                    'type': 'string',
+                    'allowed': [x for x, y in g.PLAYERS.items() if not y.dead]
+                }
+            }
+            v = Validator(schema)
+            if (v.validate(msg) and current_user.role.__class__.__name__ == 'Herbergier'
+                    and not self.used):
+                role = g.PLAYERS[msg['name']].role.__class__.__name__
+                current_user.info[msg['name']]['role'] = role
+                send({'name': msg['name'], 'role': role})
+                self.used = True
+                app.socketio.sleep(5)
+                self.parent.start_next_phase()
 
 
 class Hoer(Burger):

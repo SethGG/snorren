@@ -17,26 +17,20 @@
 
 <button type="button" id="b2">Bevestig</button>
 
+<p id="result"></p>
+
 <script type="text/javascript">
   $('#b2').click(function() {
     let name = $("#choice option:selected").val();
     socket.send({
-      'request': 'choose',
+      'request': 'reveal',
       'name': name
     });
   });
-</script>
-{% endif %}
 
-{% if not player.role %}
-<button type="button" id="b1">Volgende Stap</button>
-
-<script type="text/javascript">
-  $('#b1').click(function() {
-    socket.send({
-      'request': 'continue',
-    });
-  });
+  function pageMessageHandler(msg) {
+    $('#result').html('De rol van ' + msg.name + ' is: ' + msg.role);
+  }
 </script>
 {% endif %}
 
