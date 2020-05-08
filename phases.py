@@ -82,14 +82,16 @@ class Night:
             super().__init__(parent)
 
         def send_page(self, player=current_user):
-            emit('update_page', render_template('night.html', player=player), room=player.sid)
+            emit('update_page',
+                 render_template('game/night_end.html', num=self.parent.num, player=player),
+                 room=player.sid)
 
     def __init__(self, num):
         def get_prio(step):
             return step.priority
 
         self.num = num
-        self.protected = []
+        self.protected = {}
         self.target = None
 
         if not Night.steps:

@@ -1,0 +1,43 @@
+<h1>Nacht {{ num }}</h1>
+
+<h3>Fase:</h3>
+
+<p>De scooterjeugd wordt wakker en beslist of hij de nacht wilt verstoren.</p>
+
+{% if player.role.__class__.__name__ == 'Scooterjeugd' %}
+{% if player.dead %}
+<p>Je bent dood en mag dus helaas niets meer doen.</p>
+{% elif not player.role.disturb %}
+<p>Je hebt al je acties al gebruikt dit spel.</p>
+{% else %}
+
+<label for="smile">Wil je de nacht verstoren?</label>
+<form id="disturb">
+  <input type="radio" id="disturb_yes" name="decision" value=true>
+  <label for="disturb_yes">Ja</label>
+  <input type="radio" id="disturb_no" name="decision" value=false>
+  <label for="disturb_no">Nee</label>
+</form>
+<br>
+
+<button type="button" id="b1">Bevestig</button>
+
+<script type="text/javascript">
+  $('#b1').click(function() {
+    if ($('#disturb :checked').val() == 'true') {
+      socket.send({
+        'request': 'disturb night'
+      });
+    }
+    socket.send({
+      'request': 'continue',
+    });
+  });
+</script>
+
+</script>
+
+{% endif %}
+{% endif %}
+
+{% include "game/players.html" %}

@@ -1,0 +1,81 @@
+<h1>Nacht {{ num }}</h1>
+
+<h3>Fase:</h3>
+
+<p>De pimp wordt wakker en kiest wat hij wilt doen vannacht.</p>
+
+{% if player.role.__class__.__name__ == 'Pimp' %}
+{% if player.dead %}
+<p>Je bent dood en mag dus helaas niets meer doen.</p>
+{% elif not (player.role.dont_smile or player.role.move_hoer)%}
+<p>Je hebt al je acties al gebruikt dit spel.</p>
+{% else %}
+
+{% if player.role.dont_smile %}
+<label for="smile">Wil je jezelf vannacht beschermen door niet te lachen?</label>
+<form id="smile">
+  <input type="radio" id="smile_yes" name="decision" value=true>
+  <label for="smile_yes">Ja</label>
+  <input type="radio" id="smile_no" name="decision" value=false>
+  <label for="smile_no">Nee</label>
+</form>
+<br>
+{% endif %}
+
+{% if player.role.move_hoer %}
+<label for="move">Wil je de hoer verplaatsen?</label>
+<form id="move">
+  <input type="radio" id="move_yes" name="decision" value=true>
+  <label for="move_yes">Ja</label>
+  <input type="radio" id="move_no" name="decision" value=false>
+  <label for="move_no">Nee</label>
+  <select id="choice" style="display:none">
+    {% for name, info in player.info.items() %}
+    {% if 'dead' not in info['other'] %}
+    <option value={{ name }}>{{ name }}</option>
+    {% endif %}
+    {% endfor %}
+  </select>
+</form>
+<br>
+
+<script type="text/javascript">
+  $('#move').on('change', function() {
+    let val = $('#move :checked').val();
+    if (val == 'true') {
+      $('#choice').show();
+    } else {
+      $('#choice').hide();
+    }
+  });
+</script>
+{% endif %}
+
+<button type="button" id="b1">Bevestig</button>
+
+<script type="text/javascript">
+  $('#b1').click(function() {
+    if ($('#smile :checked').val() == 'true') {
+      socket.send({
+        'request': 'dont smile'
+      });
+    }
+    if ($('#move :checked').val() == 'true') {
+      let name = $("#choice option:selected").val();
+      socket.send({
+        'request': 'move hoer',
+        'name': name
+      });
+    }
+    socket.send({
+      'request': 'continue',
+    });
+  });
+</script>
+
+</script>
+
+{% endif %}
+{% endif %}
+
+{% include "game/players.html" %}

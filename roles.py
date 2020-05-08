@@ -74,7 +74,7 @@ class Hoer(Burger):
             }
             v = Validator(schema)
             if (v.validate(msg) and current_user.role.__class__.__name__ == 'Hoer'):
-                self.parent.protected.append(msg['name'])
+                self.parent.protected['hoer'] = [msg['name']]
                 self.parent.start_next_phase()
 
 
@@ -85,7 +85,54 @@ class Oma(Burger):
 
 class Pimp(Burger):
     def __init__(self):
-        Burger.__init__(self)
+        self._move_hoer = True
+        self.dont_smile = True
+
+    @property
+    def move_hoer(self):
+        if 'Hoer' in [x.role.__class__.__name__ for x in g.PLAYERS.values()]:
+            return self._move_hoer
+        else:
+            return False
+
+    @move_hoer.setter
+    def move_hoer(self, bool):
+        self._move_hoer = bool
+
+    class night_step(BasePhase):
+        priority = 4
+
+        def __init__(self, parent):
+            super().__init__(parent)
+
+        def send_page(self, player=current_user):
+            emit('update_page',
+                 render_template('game/night_pimp.html', num=self.parent.num, player=player),
+                 room=player.sid)
+
+        def handle_message(self, msg):
+            schema = {
+                'request': {
+                    'type': 'string',
+                    'allowed': ['move hoer', 'dont smile', 'continue']
+                },
+                'name': {
+                    'type': 'string',
+                    'required': False,
+                    'dependencies': {'request': ['move hoer']}
+                }
+            }
+            v = Validator(schema)
+            if v.validate(msg) and current_user.role.__class__.__name__ == 'Pimp':
+                if msg['request'] == 'move hoer' and current_user.role.move_hoer:
+                    if 'hoer' in self.parent.protected:
+                        self.parent.protected['hoer'] = [msg['name']]
+                    current_user.role.move_hoer = False
+                elif msg['request'] == 'dont smile' and current_user.role.dont_smile:
+                    self.parent.protected['pimp'] = [current_user.name]
+                    current_user.role.dont_smile = False
+                elif msg['request'] == 'continue':
+                    self.parent.start_next_phase()
 
 
 class Priester(Burger):
@@ -127,7 +174,33 @@ class Priester(Burger):
 
 class Scooterjeugd(Burger):
     def __init__(self):
-        Burger.__init__(self)
+        self.disturb = True
+
+    class night_step(BasePhase):
+        priority = 5
+
+        def __init__(self, parent):
+            super().__init__(parent)
+
+        def send_page(self, player=current_user):
+            emit('update_page',
+                 render_template('game/night_scooter.html', num=self.parent.num, player=player),
+                 room=player.sid)
+
+        def handle_message(self, msg):
+            schema = {
+                'request': {
+                    'type': 'string',
+                    'allowed': ['disturb night', 'continue']
+                }
+            }
+            v = Validator(schema)
+            if (v.validate(msg) and current_user.role.__class__.__name__ == 'Scooterjeugd'):
+                if msg['request'] == 'disturb night' and current_user.role.disturb:
+                    self.parent.protected['Scooterjeugd'] = list(g.PLAYERS.keys())
+                    current_user.role.disturb = False
+                if msg['request'] == 'continue':
+                    self.parent.start_next_phase()
 
 
 class Nazi:
