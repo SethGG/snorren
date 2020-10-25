@@ -7,15 +7,9 @@ import globals as g
 # ------------------------------------------------------------------------------------------------ #
 
 
-class Player(UserMixin):
-    def __init__(self, name):
-        self.name = name
+class BaseUser(UserMixin):
+    def __init__(self):
         self.sid = request.sid
-        self.role = None
-        self.dead = False
-        self.lover = False
-        self.mayor = False
-        self._info = {}
 
     def get_id(self):
         return self.sid
@@ -30,6 +24,17 @@ class Player(UserMixin):
             self.sid = request.sid
         elif not bool:
             self.sid = None
+
+
+class Player(BaseUser):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+        self.role = None
+        self.dead = False
+        self.lover = False
+        self.mayor = False
+        self._info = {}
 
     @property
     def teams(self):
@@ -59,23 +64,9 @@ class Player(UserMixin):
         return self._info
 
 
-class GameMaster(UserMixin):
+class GameMaster(BaseUser):
     def __init__(self):
-        self.sid = request.sid
-
-    def get_id(self):
-        return self.sid
-
-    @property
-    def is_active(self):
-        return bool(self.sid)
-
-    @is_active.setter
-    def is_active(self, bool):
-        if bool and not self.sid:
-            self.sid = request.sid
-        elif not bool:
-            self.sid = None
+        super().__init__()
 
     @property
     def info(self):

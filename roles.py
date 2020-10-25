@@ -16,6 +16,8 @@ class Burger:
 
 class Herbergier(Burger):
     class night_step(BasePhase):
+
+        name = 'NachtHerbergier'
         priority = 2
 
         def __init__(self, parent):
@@ -51,6 +53,8 @@ class Herbergier(Burger):
 
 class Hoer(Burger):
     class night_step(BasePhase):
+
+        name = 'NachtHoer'
         priority = 3
 
         def __init__(self, parent):
@@ -100,6 +104,8 @@ class Pimp(Burger):
         self._move_hoer = bool
 
     class night_step(BasePhase):
+
+        name = 'NachtPimp'
         priority = 4
 
         def __init__(self, parent):
@@ -119,7 +125,8 @@ class Pimp(Burger):
                 'name': {
                     'type': 'string',
                     'required': False,
-                    'dependencies': {'request': ['move hoer']}
+                    'dependencies': {'request': ['move hoer']},
+                    'allowed': [x for x, y in g.PLAYERS.items() if not y.dead]
                 }
             }
             v = Validator(schema)
@@ -137,6 +144,8 @@ class Pimp(Burger):
 
 class Priester(Burger):
     class night_step(BasePhase):
+
+        name = 'NachtPriester'
         priority = 1
 
         def __init__(self, parent):
@@ -159,7 +168,7 @@ class Priester(Burger):
                     'type': 'list',
                     'schema': {
                         'type': 'string',
-                        'allowed': [x for x, y in g.PLAYERS.items() if not y.dead],
+                        'allowed': [x for x, y in g.PLAYERS.items() if not y.dead]
                     },
                     'minlength': 2,
                     'maxlength': 2
@@ -177,6 +186,8 @@ class Scooterjeugd(Burger):
         self.disturb = True
 
     class night_step(BasePhase):
+
+        name = 'NachtScooterjeugd'
         priority = 5
 
         def __init__(self, parent):
@@ -205,9 +216,50 @@ class Scooterjeugd(Burger):
 
 class Nazi:
     team = "Nazi's"
-    night_step = None
     day_step = None
     death_step = None
+
+    class night_step(BasePhase):
+
+        name = 'NachtNazis'
+        priority = 6
+
+        def __init__(self, parent):
+            super().__init__(parent)
+            self.votes = {x: None for x, y in g.PLAYERS.items()
+                          if not y.dead and "Nazi's" in y.teams}
+            self.confirms = 0
+
+        def send_page(self, player=current_user):
+            emit('update_page',
+                 render_template('game/night_nazis.html', num=self.parent.num, player=player),
+                 room=player.sid)
+
+        def handle_message(self, msg):
+            schema = {
+                'request': {
+                    'type': 'string',
+                    'allowed': ['vote', 'confirm', 'continue']
+                },
+                'name': {
+                    'type': 'string',
+                    'required': False,
+                    'dependencies': {'request': ['vote']},
+                    'allowed': [x for x, y in g.PLAYERS.items() if not y.dead]
+                }
+            }
+            v = Validator(schema)
+            if v.validate(msg) and "Nazi's" in current_user.teams:
+                if msg['request'] == 'vote':
+                    self.votes[current_user.name] = msg['name']
+                    self.confirms = 0
+                    for name in self.votes:
+                        if name != current_user.name:
+                            send({current_user.name: msg['name']}, room=g.PLAYERS[name].sid)
+                if msg['request'] == 'confirm':
+                    self.confirms += 1
+                    if self.confirms == len(self.votes):
+                        self.parent.start_next_phase()
 
 
 class Snor(Nazi):

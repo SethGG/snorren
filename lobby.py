@@ -9,8 +9,13 @@ import random
 
 
 class Lobby:
-    @staticmethod
-    def handle_join(msg):
+
+    name = 'Lobby'
+
+    def __init__(self):
+        print('Nieuwe fase begonnen: %s' % self.name)
+
+    def handle_join(self, msg):
         def handle_player(name):
             if name in g.PLAYERS:
                 send({'error': 'Deze naam is al in gebruik'})
@@ -19,6 +24,7 @@ class Lobby:
                 login_user(g.PLAYERS[name])
                 emit('update_page', render_template('lobby/lobby.html'))
                 send({'users': list(g.PLAYERS)}, broadcast=True)
+                print('Nieuwe speler aangemeld: %s' % name)
 
         def handle_game_master():
             if g.GAME_MASTER:
@@ -28,6 +34,7 @@ class Lobby:
                 login_user(g.GAME_MASTER)
                 emit('update_page', render_template('lobby/lobby.html', gm=True, roles=g.ROLES))
                 send({'users': list(g.PLAYERS)})
+                print('Nieuwe spelleider aangemeld')
 
         schema = {
             'type': {
@@ -47,8 +54,7 @@ class Lobby:
             elif msg['type'] == 'player':
                 handle_player(msg['name'])
 
-    @staticmethod
-    def handle_message(msg):
+    def handle_message(self, msg):
         def start_game(role_selection):
             pool = []
             for role, num in role_selection.items():
@@ -79,10 +85,11 @@ class Lobby:
         if v.validate(msg) and current_user == g.GAME_MASTER:
             start_game(msg['role_selection'])
 
-    @staticmethod
-    def handle_disconnect():
+    def handle_disconnect(self):
         if current_user == g.GAME_MASTER:
             g.GAME_MASTER = None
+            print('Spelleider heeft zich afgemeld')
         elif current_user in g.PLAYERS.values():
             del g.PLAYERS[current_user.name]
             send({'users': list(g.PLAYERS)}, broadcast=True)
+            print('Speler heeft zich afgemeld: %s' % current_user.name)

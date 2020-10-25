@@ -8,7 +8,7 @@ app = Flask(__name__)
 login = LoginManager(app)
 socketio = SocketIO(app)
 
-g.CURRENT_PHASE = Lobby
+g.CURRENT_PHASE = Lobby()
 
 # ------------------------------------------------------------------------------------------------ #
 # User loader

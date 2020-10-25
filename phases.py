@@ -8,6 +8,7 @@ import globals as g
 class BasePhase:
     def __init__(self, parent):
         self.parent = parent
+        print('Nieuwe fase begonnen: %s (%s %d)' % (self.name, self.parent.name, self.parent.num))
         for player in [g.GAME_MASTER] + list(g.PLAYERS.values()):
             self.send_page(player)
 
@@ -17,6 +18,7 @@ class BasePhase:
                 g.PLAYERS[name].is_active = True
                 login_user(g.PLAYERS[name])
                 self.send_page()
+                print('Speler heeft zich opnieuw aangemeld: %s' % name)
             else:
                 send({'error': 'Er is nog een spel bezig.\n'
                       'Als je deelnemer was van dit spel kan je weer\n'
@@ -27,6 +29,7 @@ class BasePhase:
                 g.GAME_MASTER.is_active = True
                 login_user(g.GAME_MASTER)
                 self.send_page()
+                print('Spelleider heeft zich opnieuw aangemeld')
             else:
                 send({'error': 'Er is nog een spel bezig met een actieve spelleider.'})
 
@@ -59,16 +62,24 @@ class BasePhase:
         if v.validate(msg) and current_user == g.GAME_MASTER:
             self.parent.start_next_phase()
 
-    @staticmethod
-    def handle_disconnect():
-        current_user.is_active = False
+    def handle_disconnect(self):
+        if current_user.is_authenticated:
+            if current_user == g.GAME_MASTER:
+                print('Connectie met spelleider verbroken')
+            else:
+                print('Connectie met speler verbroken: %s' % current_user.name)
+            current_user.is_active = False
 
 
 class Night:
 
+    name = 'Nacht'
     steps = []
 
     class NightStart(BasePhase):
+
+        name = 'NachtStart'
+
         def __init__(self, parent):
             super().__init__(parent)
 
@@ -78,6 +89,9 @@ class Night:
                  room=player.sid)
 
     class NightEnd(BasePhase):
+
+        name = 'NachtEinde'
+
         def __init__(self, parent):
             super().__init__(parent)
 
