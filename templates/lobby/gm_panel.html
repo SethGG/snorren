@@ -2,7 +2,7 @@
 
 <form id="roles">
   <table>
-    {% for role, tuple in roles.items() %}
+    {% for role, tuple in player.manager.roles.items() %}
     {% if loop.index0 % 2 == 0 %}
     <tr>
       {% endif %}

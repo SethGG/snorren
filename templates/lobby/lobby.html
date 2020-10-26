@@ -1,6 +1,6 @@
 <h1>Lobby</h1>
 
-{% if gm %}
+{% if player == player.manager.game_master %}
 {% include "lobby/gm_panel.html" %}
 {% endif %}
 

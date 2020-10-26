@@ -1,6 +1,5 @@
 from flask import request
 from flask_login import UserMixin
-import globals as g
 
 # ------------------------------------------------------------------------------------------------ #
 # Player and GameMaster class
@@ -8,7 +7,8 @@ import globals as g
 
 
 class BaseUser(UserMixin):
-    def __init__(self):
+    def __init__(self, manager):
+        self.manager = manager
         self.sid = request.sid
 
     def get_id(self):
@@ -27,8 +27,8 @@ class BaseUser(UserMixin):
 
 
 class Player(BaseUser):
-    def __init__(self, name):
-        super().__init__()
+    def __init__(self, manager, name):
+        super().__init__(manager)
         self.name = name
         self.role = None
         self.dead = False
@@ -46,7 +46,7 @@ class Player(BaseUser):
 
     @property
     def info(self):
-        for name, player in g.PLAYERS.items():
+        for name, player in self.manager.players.items():
             if name not in self._info:
                 self._info[name] = {'role': None, 'dead': False, 'other': []}
             if name == self.name:
@@ -65,13 +65,13 @@ class Player(BaseUser):
 
 
 class GameMaster(BaseUser):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, manager):
+        super().__init__(manager)
 
     @property
     def info(self):
         info = {}
-        for name, player in g.PLAYERS.items():
+        for name, player in self.manager.players.items():
             info[name] = {
                 'role': type(player.role).__name__,
                 'dead': player.dead,

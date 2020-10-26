@@ -1,14 +1,12 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO
 from flask_login import LoginManager
-from lobby import Lobby
-import globals as g
+from manager import Manager
 
 app = Flask(__name__)
 login = LoginManager(app)
 socketio = SocketIO(app)
-
-g.CURRENT_PHASE = Lobby()
+manager = Manager()
 
 # ------------------------------------------------------------------------------------------------ #
 # User loader
@@ -17,9 +15,7 @@ g.CURRENT_PHASE = Lobby()
 
 @login.user_loader
 def load_user(id):
-    all_playes = list(g.PLAYERS.values()) + \
-        [g.GAME_MASTER] if g.GAME_MASTER else list(g.PLAYERS.values())
-    return [player for player in all_playes if player.sid == id][0]
+    return [p for p in manager.players + [manager.game_master] if p and p.sid == id][0]
 
 # ------------------------------------------------------------------------------------------------ #
 # Index route
@@ -38,14 +34,14 @@ def index():
 
 @socketio.on('join')
 def handle_join(msg):
-    g.CURRENT_PHASE.handle_join(msg)
+    manager.current_phase.handle_join(msg)
 
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    g.CURRENT_PHASE.handle_disconnect()
+    manager.current_phase.handle_disconnect()
 
 
 @socketio.on('message')
 def handle_message(msg):
-    g.CURRENT_PHASE.handle_message(msg)
+    manager.current_phase.handle_message(msg)
