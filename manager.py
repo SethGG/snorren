@@ -8,6 +8,7 @@ from roles.priester import Priester
 from roles.scooterjeugd import Scooterjeugd
 from roles.snor import Snor
 from lobby import Lobby
+from night import NightStart, NightEnd
 from flask_socketio import send
 from random import shuffle
 
@@ -31,25 +32,33 @@ class Manager:
     def __init__(self):
         self.game_master = None
         self.players = []
-        self.phase_stack = [Lobby]
+        self.current_phase = Lobby(self)
+        self.phase_stack = []
+        self.night_cycle = [NightStart, NightEnd]
+        self.day_cycle = []
 
-        self.next_phase()
+    def start_game(self):
+        pass
 
-    def start_game(self, role_selection):
-        pool = []
-        for role, num in role_selection.items():
-            obj = [x for x in self.roles if x.__name__ == role]
-            pool.extend(obj * num)
-        if len(pool) != len(self.players):
-            send({'error': 'Opgegeven aantal rollen is ongelijk aan het aantal spelers.'})
-        else:
-            shuffle(pool)
-            for idx, player in enumerate(self.players):
-                player.role = pool[idx]()
+    def new_night(self, previous_day):
+        pass
+
+    def new_day(self, previous_night):
+        pass
 
     def next_phase(self):
+        if not self.phase_stack:
+            if isinstance(self.current_phase, self.night_cycle[-1]):
+                new_cycle = self.day_cycle
+            else:
+                new_cycle = self.night_cycle
+            for phase in new_cycle:
+                self.phase_stack.insert(0, phase(self))
+
         if self.phase_stack:
-            self.current_phase = self.phase_stack.pop()(self)
+            self.current_phase = self.phase_stack.pop()
+            for player in [p for p in self.players + [self.game_master] if p]:
+                self.current_phase.send_page(player)
     #    elif isinstance(self.current_phase, Lobby):
 
     def reset(self):

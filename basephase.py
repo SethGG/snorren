@@ -8,18 +8,17 @@ class BasePhase:
     def __init__(self, manager):
         self.manager = manager
         print('Nieuwe fase begonnen: %s' % type(self).__name__)
-        for player in [p for p in self.manager.players + [self.manager.game_master] if p]:
-            self.send_page(player)
 
     def send_page(self, player=current_user):
         emit('update_page', render_template(self.page_path, player=player), room=player.sid)
 
     def handle_player(self, name):
-        if name in self.manager.players and not self.manager.players[name].is_active:
-            self.manager.players[name].is_active = True
-            login_user(self.manager.players[name])
+        for player in [p for p in self.manager.players if p.name == name and not p.is_active]:
+            player.is_active = True
+            login_user(player)
             self.send_page()
             print('Speler heeft zich opnieuw aangemeld: %s' % name)
+            break
         else:
             send({'error': 'Er is nog een spel bezig.\n'
                   'Als je deelnemer was van dit spel kan je weer\n'
