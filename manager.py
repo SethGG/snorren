@@ -1,16 +1,4 @@
-from roles.burger import Burger
-from roles.herbergier import Herbergier
-from roles.hoer import Hoer
-from roles.nazi import Nazi
-from roles.oma import Oma
-from roles.pimp import Pimp
-from roles.priester import Priester
-from roles.scooterjeugd import Scooterjeugd
-from roles.snor import Snor
 from lobby import Lobby
-from night import NightStart, NightEnd
-from flask_socketio import send
-from random import shuffle
 
 # ------------------------------------------------------------------------------------------------ #
 # Global variables
@@ -18,23 +6,12 @@ from random import shuffle
 
 
 class Manager:
-    roles = {
-        Burger: (1, 5),
-        Nazi: (1, 5),
-        Snor: (0, 1),
-        Herbergier: (0, 1),
-        Priester: (0, 1),
-        Hoer: (0, 1),
-        Pimp: (0, 1),
-        Scooterjeugd: (0, 1),
-        Oma: (0, 1)}
-
     def __init__(self):
         self.game_master = None
         self.players = []
         self.current_phase = Lobby(self)
         self.phase_stack = []
-        self.night_cycle = [NightStart, NightEnd]
+        self.night_cycle = []
         self.day_cycle = []
 
     def start_game(self):

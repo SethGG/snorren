@@ -1,23 +1,16 @@
 from basephase import BasePhase
 from roles.burger import Burger
-from flask_socketio import emit
 from flask_login import current_user
-from flask import render_template
 from cerberus import Validator
 
 
 class NightStep(BasePhase):
-
     name = 'NachtHoer'
+    page_path = 'game/night_hoer.html'
     priority = 3
 
     def __init__(self, manager):
         super().__init__(manager)
-
-    def send_page(self, player=current_user):
-        emit('update_page',
-             render_template('game/night_hoer.html', num=self.parent.num, player=player),
-             room=player.sid)
 
     def handle_message(self, msg):
         schema = {
@@ -37,4 +30,5 @@ class NightStep(BasePhase):
 
 
 class Hoer(Burger):
+    name = "Hoer"
     night_step = NightStep

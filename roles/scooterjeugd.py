@@ -35,6 +35,7 @@ class NightStep(BasePhase):
 
 
 class Scooterjeugd(Burger):
+    name = "Scooterjeugd"
     night_step = NightStep
 
     def __init__(self):

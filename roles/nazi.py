@@ -48,6 +48,7 @@ class night_step(BasePhase):
 
 
 class Nazi:
+    name = "Nazi"
     team = "Nazi's"
     day_step = None
     death_step = None

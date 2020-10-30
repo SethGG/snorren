@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from app import app, socketio
+from snorren import Snorren
 
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0")
+    snorren = Snorren(debug='INFO')
+    snorren.run_server(host="0.0.0.0")

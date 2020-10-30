@@ -44,4 +44,5 @@ class NightStep(BasePhase):
 
 
 class Priester(Burger):
+    name = "Priester"
     night_step = NightStep
